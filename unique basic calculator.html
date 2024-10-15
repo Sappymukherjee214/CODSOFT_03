@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .calculator {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .display {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 24px;
+            height: 60px;
+            margin-bottom: 20px;
+            padding: 10px;
+            text-align: right;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            color: #333;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 15px 10px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .operator {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .operator:hover {
+            background-color: #f57c00;
+        }
+
+        .function {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .function:hover {
+            background-color: #1976d2;
+        }
+
+        .equals {
+            background-color: #4caf50;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .equals:hover {
+            background-color: #45a049;
+        }
+
+        .clear {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .clear:hover {
+            background-color: #d32f2f;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 10px;
+            }
+
+            .buttons {
+                gap: 5px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="function" onclick="toggleSign()">±</button>
+            <button class="function" onclick="percent()">%</button>
+            <button class="function" onclick="factorial()">n!</button>
+            <button class="operator" onclick="appendOperator('/')">/</button>
+
+            <button onclick="appendNumber(7)">7</button>
+            <button onclick="appendNumber(8)">8</button>
+            <button onclick="appendNumber(9)">9</button>
+            <button class="function" onclick="mathFunction('sin')">sin</button>
+            <button class="operator" onclick="appendOperator('*')">*</button>
+
+            <button onclick="appendNumber(4)">4</button>
+            <button onclick="appendNumber(5)">5</button>
+            <button onclick="appendNumber(6)">6</button>
+            <button class="function" onclick="mathFunction('cos')">cos</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+
+            <button onclick="appendNumber(1)">1</button>
+            <button onclick="appendNumber(2)">2</button>
+            <button onclick="appendNumber(3)">3</button>
+            <button class="function" onclick="mathFunction('tan')">tan</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+
+            <button onclick="appendNumber(0)">0</button>
+            <button onclick="appendDecimal()">.</button>
+            <button class="function" onclick="mathFunction('log')">log</button>
+            <button class="function" onclick="mathFunction('exp')">exp</button>
+            <button class="equals" onclick="calculate()">=</button>
+
+            <button class="function" onclick="mathFunction('sqrt')">√</button>
+            <button class="function" onclick="mathFunction('pow')">x^y</button>
+            <button class="function" onclick="toggleAngleMode()">Deg/Rad</button>
+            <button class="function" onclick="permutation()">nPr</button>
+            <button class="function" onclick="combination()">nCr</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let currentOperator = '';
+        let previousInput = '';
+        let result = null;
+        let isRadianMode = true;
+
+        const display = document.getElementById('display');
+
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        function appendNumber(number) {
+            if (currentInput === '0' || currentInput === 'Error') {
+                currentInput = number.toString();
+            } else {
+                currentInput += number.toString();
+            }
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+                updateDisplay();
+            }
+        }
+
+        function appendOperator(operator) {
+            if (currentOperator !== '') {
+                calculate();
+            }
+            previousInput = currentInput;
+            currentInput = '0';
+            currentOperator = operator;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            currentOperator = '';
+            previousInput = '';
+            result = null;
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        }
+
+        function percent() {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+            updateDisplay();
+        }
+
+        function factorial() {
+            const n = parseInt(currentInput);
+            if (n < 0) {
+                currentInput = 'Error';
+            } else {
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                currentInput = result.toString();
+            }
+            updateDisplay();
+        }
+
+        function mathFunction(func) {
+            const x = parseFloat(currentInput);
+            let result;
+
+            switch (func) {
+                case 'sin':
+                    result = isRadianMode ? Math.sin(x) : Math.sin(x * Math.PI / 180);
+                    break;
+                case 'cos':
+                    result = isRadianMode ? Math.cos(x) : Math.cos(x * Math.PI / 180);
+                    break;
+                case 'tan':
+                    result = isRadianMode ? Math.tan(x) : Math.tan(x * Math.PI / 180);
+                    break;
+                case 'log':
+                    result = Math.log10(x);
+                    break;
+                case 'exp':
+                    result = Math.exp(x);
+                    break;
+                case 'sqrt':
+                    result = Math.sqrt(x);
+                    break;
+                case 'pow':
+                    appendOperator('^');
+                    return;
+            }
+
+            currentInput = result.toString();
+            updateDisplay();
+        }
+
+        function toggleAngleMode() {
+            isRadianMode = !isRadianMode;
+            alert(`Angle mode set to ${isRadianMode ? 'Radians' : 'Degrees'}`);
+        }
+
+        function permutation() {
+            appendOperator('P');
+        }
+
+        function combination() {
+            appendOperator('C');
+        }
+
+        function calculate() {
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+
+            if (isNaN(prev) || isNaN(current)) return;
+
+            switch (currentOperator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                case '^':
+                    result = Math.pow(prev, current);
+                    break;
+                case 'P':
+                    result = permutationCalc(prev, current);
+                    break;
+                case 'C':
+                    result = combinationCalc(prev, current);
+                    break;
+            }
+
+            currentInput = result.toString();
+            currentOperator = '';
+            previousInput = '';
+            updateDisplay();
+        }
+
+        function permutationCalc(n, r) {
+            return factorial(n) / factorial(n - r);
+        }
+
+        function combinationCalc(n, r) {
+            return factorial(n) / (factorial(r) * factorial(n - r));
+        }
+
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            return n * factorial(n - 1);
+        }
+    </script>
+</body>
+</html>
